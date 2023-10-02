@@ -25,6 +25,7 @@ func main() {
 		file, err := os.Open(file_name)
 
 		if err != nil {
+			fmt.Fprintf(os.Stderr, "File with name %s could not be opened\n", file_name)
 			os.Exit(1)
 		}
 
@@ -33,16 +34,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	readFile(fp, data_to_display)
+	total_bytes := readFile(fp, data_to_display)
 
-	fmt.Println(data_to_display)
 
 	defer fp.Close()
+
+	fmt.Printf("\t%d\t%s\n", total_bytes, os.Args[2])
 
 	os.Exit(0)
 }
 
-func readFile(fp *os.File, data_to_display string) {
+func readFile(fp *os.File, data_to_display string) int {
 	total_bytes := 0
 	buffer := make([]byte, 64)
 
@@ -59,6 +61,6 @@ func readFile(fp *os.File, data_to_display string) {
 		total_bytes += bytes_read
 	}
 
-	fmt.Println(total_bytes)
+	return total_bytes
 }
 
