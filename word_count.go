@@ -97,6 +97,7 @@ func readFile(fp *os.File, data_to_display string) (int, int, int) {
 			}
 
 			for i < N && unicode.IsSpace(runes[i]) {
+				// 10 is the codepoint for the new line character.
 				if runes[i] == 10 {
 					total_lines += 1
 				}
@@ -117,3 +118,4 @@ func readFile(fp *os.File, data_to_display string) (int, int, int) {
 
 	return total_bytes, total_lines, total_words
 }
+
