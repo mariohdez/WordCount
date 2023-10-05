@@ -1,13 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
-	"os"
 	"io"
+	"os"
+	"unicode"
 )
 
 func main() {
-	known_flags := map[string]bool{"-c": true, "-l":true, "-w":true, "-m":true}
+	known_flags := map[string]bool{"-c": true, "-l": true, "-w": true, "-m": true}
 	data_to_display := "everything"
 	fp := os.Stdin
 
@@ -32,18 +34,15 @@ func main() {
 		}
 
 		fp = file
-		break
 	default:
 		os.Exit(1)
-		break
 	}
 
 	total_bytes, total_lines, total_words := readFile(fp, data_to_display)
 
-
 	defer fp.Close()
 
-	fmt.Printf("  %d   %d  %d %s\n", total_lines, total_words, total_bytes, os.Args[2])
+	fmt.Printf("     %d    %d    %d %s\n", total_lines, total_words, total_bytes, os.Args[2])
 
 	os.Exit(0)
 }
@@ -52,15 +51,17 @@ func readFile(fp *os.File, data_to_display string) (int, int, int) {
 	total_bytes := 0
 	total_lines := 0
 	total_words := 0
-	buffer_size := 64
-
+	buffer_size := 10
 	buffer := make([]byte, buffer_size)
+	ended_on_a_char := false
+	processed_a_word := false
+	prev_location := 0
 
 	for {
 		bytes_read, err := fp.Read(buffer)
 
 		if err != nil {
-			if (err == io.EOF) {
+			if err == io.EOF {
 				break
 			}
 			os.Exit(1)
@@ -68,39 +69,60 @@ func readFile(fp *os.File, data_to_display string) (int, int, int) {
 
 		total_bytes += bytes_read
 
-		for i:= 0; i < bytes_read; {
-			prev_location := i
-			for i < bytes_read && !isWhitespace(buffer[i]) {
+		if bytes_read == 0 {
+			break
+		}
+
+		for j := bytes_read; j < buffer_size; j++ {
+			buffer[j] = 0
+		}
+
+		runes := bytes.Runes(buffer)
+
+		for k := 0; k < len(runes); k++ {
+			fmt.Printf("%c", runes[k])
+		}
+		fmt.Println()
+
+		N := len(runes)
+
+		for i := 0; i < N; {
+			prev_location = i
+			for i < N && !unicode.IsSpace(runes[i]) {
 				i++
 			}
+			processed_a_word = prev_location != i
 
+			ended_on_a_char = i == N
 
-			if prev_location != i {
-				total_words += 1
+			if ended_on_a_char {
+				break
 			}
 
-			for i < bytes_read && isWhitespace(buffer[i]) {
-				if (buffer[i] == 10) {
+			for i < N && unicode.IsSpace(runes[i]) {
+				if runes[i] == 10 {
 					total_lines += 1
 				}
 
 				i++
 			}
+
+			if processed_a_word {
+				total_words += 1
+			}
+
+			fmt.Printf("total words %d\n", total_words)
 		}
+
+		fmt.Printf("total words %d\n", total_words)
 	}
+
+	if ended_on_a_char {
+		fmt.Printf("wait, should this happen?\n")
+		total_words += 1
+	}
+
+	fmt.Printf("total words %d\n", total_words)
 
 	return total_bytes, total_lines, total_words
 }
-
-func isWhitespace(b byte) bool {
-	if (b > 8 && b < 14) {
-		return true
-	}
-
-	if (b == 32) {
-		return true
-	}
-
-	return false
-}
-
