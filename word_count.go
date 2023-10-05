@@ -54,8 +54,7 @@ func readFile(fp *os.File, data_to_display string) (int, int, int) {
 	buffer_size := 10
 	buffer := make([]byte, buffer_size)
 	ended_on_a_char := false
-	processed_a_word := false
-	prev_location := 0
+	word_len_so_far := 0
 
 	for {
 		bytes_read, err := fp.Read(buffer)
@@ -79,19 +78,17 @@ func readFile(fp *os.File, data_to_display string) (int, int, int) {
 
 		runes := bytes.Runes(buffer)
 
-		for k := 0; k < len(runes); k++ {
-			fmt.Printf("%c", runes[k])
-		}
-		fmt.Println()
-
 		N := len(runes)
 
 		for i := 0; i < N; {
-			prev_location = i
+			if runes[i] == 0 {
+				break
+			}
+
 			for i < N && !unicode.IsSpace(runes[i]) {
 				i++
+				word_len_so_far++
 			}
-			processed_a_word = prev_location != i
 
 			ended_on_a_char = i == N
 
@@ -107,22 +104,16 @@ func readFile(fp *os.File, data_to_display string) (int, int, int) {
 				i++
 			}
 
-			if processed_a_word {
+			if word_len_so_far != 0 {
 				total_words += 1
+				word_len_so_far = 0
 			}
-
-			fmt.Printf("total words %d\n", total_words)
 		}
-
-		fmt.Printf("total words %d\n", total_words)
 	}
 
-	if ended_on_a_char {
-		fmt.Printf("wait, should this happen?\n")
+	if word_len_so_far != 0 {
 		total_words += 1
 	}
-
-	fmt.Printf("total words %d\n", total_words)
 
 	return total_bytes, total_lines, total_words
 }
