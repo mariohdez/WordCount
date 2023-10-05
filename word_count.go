@@ -51,7 +51,7 @@ func readFile(fp *os.File, data_to_display string) (int, int, int) {
 	total_bytes := 0
 	total_lines := 0
 	total_words := 0
-	buffer_size := 10
+	buffer_size := 256
 	buffer := make([]byte, buffer_size)
 	ended_on_a_char := false
 	word_len_so_far := 0
