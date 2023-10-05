@@ -11,6 +11,7 @@ import (
 func main() {
 	known_flags := map[string]bool{"-c": true, "-l": true, "-w": true, "-m": true}
 	data_to_display := "everything"
+
 	fp := os.Stdin
 
 	switch num_args := len(os.Args); num_args {
