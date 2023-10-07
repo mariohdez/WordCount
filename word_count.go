@@ -11,13 +11,26 @@ import (
 func main() {
 	known_flags := map[string]bool{"-c": true, "-l": true, "-w": true, "-m": true}
 	data_to_display := "everything"
+	was_from_stdin := false
+	file_name := ""
 
 	fp := os.Stdin
 
 	switch num_args := len(os.Args); num_args {
 	case 1:
+		was_from_stdin = true
 		break
 	case 2:
+		file_name = os.Args[1]
+		file, err := os.Open(file_name)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "file with name %s could not be opened\n", file_name)
+			os.Exit(1)
+		}
+
+		fp = file
+
 		break
 	case 3:
 		if _, ok := known_flags[os.Args[1]]; !ok {
@@ -25,7 +38,7 @@ func main() {
 		}
 
 		data_to_display = os.Args[1]
-		file_name := os.Args[2]
+		file_name = os.Args[2]
 
 		file, err := os.Open(file_name)
 
@@ -43,7 +56,37 @@ func main() {
 
 	defer fp.Close()
 
-	fmt.Printf("     %d    %d    %d %s\n", total_lines, total_words, total_bytes, os.Args[2])
+	switch {
+	case data_to_display == "everything":
+		if was_from_stdin {
+			fmt.Printf("%8d%8d%8d\n", total_lines, total_words, total_bytes)
+		} else {
+			fmt.Printf("%8d%8d%8d %8s\n", total_lines, total_words, total_bytes, file_name)
+		}
+		break
+	case data_to_display == "-c":
+		if was_from_stdin {
+			fmt.Printf("%8d\n", total_lines)
+		} else {
+			fmt.Printf("%8d %8s\n", total_bytes, file_name)
+		}
+		break
+	case data_to_display == "-l":
+		if was_from_stdin {
+			fmt.Printf("%8d %8s\n", total_lines)
+		} else {
+			fmt.Printf("%8d %8s\n", total_lines, file_name)
+		}
+		break
+	case data_to_display == "-w":
+		if was_from_stdin {
+			fmt.Printf("%8d %8s\n", total_lines)
+		} else {
+			fmt.Printf("%8d %8s\n", total_words, file_name)
+		}
+		break
+	}
+
 
 	os.Exit(0)
 }
