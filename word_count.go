@@ -87,7 +87,6 @@ func main() {
 		break
 	}
 
-
 	os.Exit(0)
 }
 
@@ -162,4 +161,3 @@ func readFile(fp *os.File, data_to_display string) (int, int, int) {
 
 	return total_bytes, total_lines, total_words
 }
-
